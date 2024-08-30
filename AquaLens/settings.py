@@ -135,3 +135,13 @@ REST_FRAMEWORK = {
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
+
+# Static files directories
+STATICFILES_DIRS = [BASE_DIR / 'static']
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# Static root
+STATIC_ROOT = 'staticfiles'
