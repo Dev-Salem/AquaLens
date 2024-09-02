@@ -113,6 +113,8 @@ from ultralytics import YOLO
 
 matplotlib.use("svg")
 
+path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
+
 
 class AcqaLens:
     def __init__(self, model_path) -> None:
@@ -125,7 +127,11 @@ class AcqaLens:
         self.model = YOLO(model_path)
         self.image_name = "output_image"
         self.image_type = "jpg"
-        self.image_path = ""
+        self.image_path = "media/output/"
+        self.max_confidence = 0
+        self.min_confidence = 0
+        self.object_count = 0
+        self.average_confidence = 0
 
     def predict(self, image):
         return self.visualize_predictions(self.image_prediction(image), image)
@@ -137,8 +143,6 @@ class AcqaLens:
         img = plt.imread(image)
         plt.figure(figsize=(10, 10))
         plt.imshow(img)
-        plt.savefig("/Users/devsalem/Desktop/hackathon/back/media/g.png")
-
         confidence_stack = []
 
         for box in prediction[0].boxes:
@@ -173,14 +177,18 @@ class AcqaLens:
             )
 
         plt.axis("off")
+        if len(confidence_stack) > 0:
+            self.max_confidence, self.min_confidence = max(confidence_stack), min(
+                confidence_stack
+            )
+            self.object_count = len(prediction[0].boxes)
+            self.average_confidence = sum(confidence_stack) / self.object_count
 
-        self.object_count = len(prediction[0].boxes)
-        self.max_confidence, self.min_confidence = max(confidence_stack), min(
-            confidence_stack
+        plt.savefig(
+            self.image_path + self.image_name + "." + self.image_type,
+            bbox_inches="tight",
+            pad_inches=0,
         )
-        self.average_confidence = sum(confidence_stack) / self.object_count
-
-        plt.savefig("/Users/devsalem/Desktop/hackathon/back/media/hello.jpg")
 
         self.properties()
 
