@@ -1,26 +1,41 @@
-from django.shortcuts import render
+import os
+
+from django.conf import settings
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .model_facade import ModelFacade
-from .models import ProcessedImage
-from .serializer import ImageSerializer, ProcessedImageSerializer
+from model.model import AcqaLens
 
-# Create your views here.
+from .serializer import UploadedImageSerializer
 
 
 class ScanViews(APIView):
-    serializer_class = ImageSerializer
+    serializer_class = UploadedImageSerializer
 
     def get(self, request, *args, **kwargs):
-        return Response("Use Post Method to post images")
+        return Response("Hello world")
 
-    def post(self, request, format=None, *args, **kwargs):
-        serializer = self.serializer_class(data=request.data)
+    def post(self, request, *args, **kwargs):
+        serializer = UploadedImageSerializer(data=request.data)
         if serializer.is_valid():
             image = serializer.validated_data["image"]
-            model = ModelFacade(image=image)
-            model1 = ProcessedImage(accuracy=100)
-            result = ProcessedImageSerializer(model1)
-            return Response(result.data)
-        return Response("Error uploading image")
+
+            # Save the uploaded image to MEDIA_ROOT
+            image_path = os.path.join(settings.MEDIA_ROOT, image.name)
+            with open(image_path, "wb+") as destination:
+                for chunk in image.chunks():
+                    destination.write(chunk)
+
+            # Initialize model (adjust path as necessary)
+            model = AcqaLens("/Users/devsalem/Desktop/hackathon/back/scan/best.pt")
+
+            # Run prediction
+            model.predict(image_path)
+
+            # Get results
+            results = model.properties()
+
+            return Response(results, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
