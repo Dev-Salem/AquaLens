@@ -20,20 +20,12 @@ class ScanViews(APIView):
         serializer = UploadedImageSerializer(data=request.data)
         if serializer.is_valid():
             image = serializer.validated_data["image"]
-
-            # Save the uploaded image to MEDIA_ROOT
             image_path = os.path.join(settings.MEDIA_ROOT, image.name)
             with open(image_path, "wb+") as destination:
                 for chunk in image.chunks():
                     destination.write(chunk)
-
-            # Initialize model (adjust path as necessary)
-            model = AcqaLens("/Users/devsalem/Desktop/hackathon/back/scan/best.pt")
-
-            # Run prediction
+            model = AcqaLens("model/best.pt")
             model.predict(image_path)
-
-            # Get results
             results = model.properties()
 
             return Response(results, status=status.HTTP_200_OK)
