@@ -102,6 +102,7 @@
 
 import os
 
+import matplotlib
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -109,6 +110,8 @@ import torch
 from django.conf import settings
 from PIL import Image
 from ultralytics import YOLO
+
+matplotlib.use("svg")
 
 
 class AcqaLens:
@@ -131,24 +134,53 @@ class AcqaLens:
         return self.model.predict(source=image, device=self.mps_device, save=True)
 
     def visualize_predictions(self, prediction, image):
+        img = plt.imread(image)
+        plt.figure(figsize=(10, 10))
+        plt.imshow(img)
+        plt.savefig("/Users/devsalem/Desktop/hackathon/back/media/g.png")
 
         confidence_stack = []
-        for box in prediction[0].boxes:
-            x_min, y_min, x_max, y_max = box.xyxy[0].cpu().numpy()
-            confidence = box.conf.cpu().numpy().item() * 100
-            label = int(box.cls.cpu().numpy().item())
-            confidence_stack.append(confidence)
 
-        # Use Django's MEDIA_ROOT to save the image
-        self.image_path = os.path.join(
-            settings.MEDIA_ROOT, f"{self.image_name}.{self.image_type}"
-        )
+        for box in prediction[0].boxes:
+            # Extract the bounding box coordinates, confidence, and label as scalar values
+            x_min, y_min, x_max, y_max = box.xyxy[0].cpu().numpy()
+            confidence = (
+                box.conf.cpu().numpy().item()
+            ) * 100  # Use .item() to extract the scalar
+            label = int(
+                box.cls.cpu().numpy().item()
+            )  # Use .item() and int() to extract the scalar
+            confidence_stack.append(confidence)
+            # Create a rectangle patch
+            rect = patches.Rectangle(
+                (x_min, y_min),
+                x_max - x_min,
+                y_max - y_min,
+                linewidth=1,
+                edgecolor="r",
+                facecolor="none",
+            )
+
+            # Add the patch to the Axes
+            plt.gca().add_patch(rect)
+            plt.text(
+                x_min,
+                y_min,
+                f"{confidence:.2f}%",
+                color="white",
+                fontsize=12,
+                backgroundcolor="red",
+            )
+
+        plt.axis("off")
 
         self.object_count = len(prediction[0].boxes)
         self.max_confidence, self.min_confidence = max(confidence_stack), min(
             confidence_stack
         )
         self.average_confidence = sum(confidence_stack) / self.object_count
+
+        plt.savefig("/Users/devsalem/Desktop/hackathon/back/media/hello.jpg")
 
         self.properties()
 
