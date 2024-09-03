@@ -19,15 +19,15 @@ class ScanViews(APIView):
     def post(self, request, *args, **kwargs):
         serializer = UploadedImageSerializer(data=request.data)
         if serializer.is_valid():
-            image = serializer.validated_data["image"]
-            image_path = os.path.join(settings.MEDIA_ROOT, image.name)
-            with open(image_path, "wb+") as destination:
-                for chunk in image.chunks():
-                    destination.write(chunk)
-            model = AcqaLens("best.pt")
-            model.predict(image_path)
-            results = model.properties()
+            # image = serializer.validated_data["image"]
+            # image_path = os.path.join(settings.MEDIA_ROOT, image.name)
+            # with open(image_path, "wb+") as destination:
+            #     for chunk in image.chunks():
+            #         destination.write(chunk)
+            # model = AcqaLens("best.pt")
+            # model.predict(image_path)
+            # results = model.properties()
 
-            return Response(results, status=status.HTTP_200_OK)
+            return Response({"Success here"}, status=status.HTTP_200_OK)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
