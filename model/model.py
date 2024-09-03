@@ -100,7 +100,9 @@
 #     print(model.image_path, model.min_confidence, model.properties())
 
 
+import glob
 import os
+import random
 
 import matplotlib
 import matplotlib.patches as patches
@@ -125,9 +127,10 @@ class AcqaLens:
             raise RuntimeError("MPS device not found.")
 
         self.model = YOLO(model_path)
-        self.image_name = "output_image"
+        self.image_name = "output_image" + str(random.randint(100, 10000))
         self.image_type = "jpg"
-        self.image_path = "media/output/"
+        self.image_file = "media/output/"
+        self.image_path = self.image_file + self.image_name + "." + self.image_type
         self.max_confidence = 0
         self.min_confidence = 0
         self.object_count = 0
@@ -145,6 +148,9 @@ class AcqaLens:
         plt.imshow(img)
         confidence_stack = []
 
+        self.prop = []
+        for file in glob.glob(self.image_file + "*.jpg"):
+            os.remove(file)
         for box in prediction[0].boxes:
             # Extract the bounding box coordinates, confidence, and label as scalar values
             x_min, y_min, x_max, y_max = box.xyxy[0].cpu().numpy()
@@ -185,12 +191,16 @@ class AcqaLens:
             self.average_confidence = sum(confidence_stack) / self.object_count
 
         plt.savefig(
-            self.image_path + self.image_name + "." + self.image_type,
+            self.image_path,
             bbox_inches="tight",
             pad_inches=0,
         )
 
         self.properties()
+
+        for file in glob.glob("media/" + "*"):
+            if "output" not in file:
+                os.remove(file)
 
     def properties(self):
         return {
@@ -201,4 +211,5 @@ class AcqaLens:
             "max": round(self.max_confidence, 2),
             "average": round(self.average_confidence, 2),
             "count": self.object_count,
+            "files": self.prop,
         }

@@ -24,7 +24,7 @@ class ScanViews(APIView):
             with open(image_path, "wb+") as destination:
                 for chunk in image.chunks():
                     destination.write(chunk)
-            model = AcqaLens("model/best.pt")
+            model = AcqaLens("best.pt")
             model.predict(image_path)
             results = model.properties()
 
