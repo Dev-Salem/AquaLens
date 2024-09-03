@@ -120,12 +120,16 @@ path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
 
 class AcqaLens:
     def __init__(self, model_path) -> None:
-        if torch.backends.mps.is_available():
-            self.mps_device = torch.device("mps")
-            print("========== STEP [MPS] ===========")
-            print("MPS working...")
-        else:
-            raise RuntimeError("MPS device not found.")
+        print("========== STEP [INIT] ===========")
+        try:
+            if torch.backends.mps.is_available():
+                self.mps_device = torch.device("mps")
+                print("========== STEP [MPS] ===========")
+                print("MPS working...")
+            else:
+                raise RuntimeError("MPS device not found.")
+        except:
+            print("========== STEP [EXCEPT] ===========")
         print("========== STEP [AFTER MPS] ===========")
 
         self.model = YOLO(model_path)
