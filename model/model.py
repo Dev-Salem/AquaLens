@@ -122,11 +122,14 @@ class AcqaLens:
     def __init__(self, model_path) -> None:
         if torch.backends.mps.is_available():
             self.mps_device = torch.device("mps")
+            print("========== STEP [MPS] ===========")
             print("MPS working...")
         else:
             raise RuntimeError("MPS device not found.")
+        print("========== STEP [AFTER MPS] ===========")
 
         self.model = YOLO(model_path)
+        print("========== STEP [AFTER MODEL] ===========")
         self.image_name = "output_image" + str(random.randint(100, 10000))
         self.image_type = "jpg"
         self.image_file = "media/output/"
@@ -135,22 +138,31 @@ class AcqaLens:
         self.min_confidence = 0
         self.object_count = 0
         self.average_confidence = 0
+        print("========== STEP [init last] ===========")
 
     def predict(self, image):
+        print("========== STEP [11] ===========")
         return self.visualize_predictions(self.image_prediction(image), image)
 
     def image_prediction(self, image):
+        print("========== STEP [prediction] ===========")
         return self.model.predict(source=image, device=self.mps_device, save=True)
 
     def visualize_predictions(self, prediction, image):
+        print("========== STEP [12] ===========")
         img = plt.imread(image)
+        print("========== STEP [13] ===========")
         plt.figure(figsize=(10, 10))
+        print("========== STEP [14] ===========")
         plt.imshow(img)
+        print("========== STEP [15] ===========")
         confidence_stack = []
+        print("========== STEP [16] ===========")
 
         self.prop = []
         for file in glob.glob(self.image_file + "*.jpg"):
             os.remove(file)
+        print("========== STEP [17] ===========")
         for box in prediction[0].boxes:
             # Extract the bounding box coordinates, confidence, and label as scalar values
             x_min, y_min, x_max, y_max = box.xyxy[0].cpu().numpy()
@@ -171,6 +183,8 @@ class AcqaLens:
                 facecolor="none",
             )
 
+            print("========== STEP [18] ===========")
+
             # Add the patch to the Axes
             plt.gca().add_patch(rect)
             plt.text(
@@ -182,6 +196,7 @@ class AcqaLens:
                 backgroundcolor="red",
             )
 
+        print("========== STEP [19] ===========")
         plt.axis("off")
         if len(confidence_stack) > 0:
             self.max_confidence, self.min_confidence = max(confidence_stack), min(
@@ -189,18 +204,21 @@ class AcqaLens:
             )
             self.object_count = len(prediction[0].boxes)
             self.average_confidence = sum(confidence_stack) / self.object_count
-
+        print("========== STEP [20] ===========")
         plt.savefig(
             self.image_path,
             bbox_inches="tight",
             pad_inches=0,
         )
+        print("========== STEP [21] ===========")
 
         self.properties()
+        print("========== STEP [21] ===========")
 
         for file in glob.glob("media/" + "*"):
             if "output" not in file:
                 os.remove(file)
+        print("========== STEP [22] ===========")
 
     def properties(self):
         return {
