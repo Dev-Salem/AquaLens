@@ -121,15 +121,6 @@ path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "")
 class AcqaLens:
     def __init__(self, model_path) -> None:
         print("========== STEP [INIT] ===========")
-        try:
-            if torch.backends.mps.is_available():
-                self.mps_device = torch.device("mps")
-                print("========== STEP [MPS] ===========")
-                print("MPS working...")
-            else:
-                raise RuntimeError("MPS device not found.")
-        except:
-            print("========== STEP [EXCEPT] ===========")
         print("========== STEP [AFTER MPS] ===========")
 
         self.model = YOLO(model_path)
@@ -150,7 +141,7 @@ class AcqaLens:
 
     def image_prediction(self, image):
         print("========== STEP [prediction] ===========")
-        return self.model.predict(source=image, device=self.mps_device, save=True)
+        return self.model.predict(source=image, save=True)
 
     def visualize_predictions(self, prediction, image):
         print("========== STEP [12] ===========")
